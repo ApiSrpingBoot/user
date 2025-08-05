@@ -3,7 +3,9 @@ package ec.llima.springcloud.ms.users.controllers;
 import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -55,18 +57,10 @@ public class UserController {
 
     @PutMapping("/update/{id}")
     public ResponseEntity<User> update(@PathVariable Long id, @RequestBody User user) {
-        Optional<User> optionalUser = this.service.findById(id);
-        return optionalUser.map(userFound -> {
-            userFound.setLogin(user.getLogin()); 
-            userFound.setFirstname(user.getFirstname());
-            userFound.setLastname(user.getLastname());
-            userFound.setMail(user.getMail());
-            userFound.setPassword(user.getPassword());
-            userFound.setActive(user.isActive());
-            // Actualizar otros campos según sea necesario 
-            User userUpdated = this.service.update(userFound);
-            return ResponseEntity.status(HttpStatus.CREATED).body(userUpdated);
-        }).orElseGet(() -> ResponseEntity.notFound().build());
+        Optional<User> userUpdated = this.service.update(user, id);
+        return userUpdated.map(userFound -> 
+        ResponseEntity.status(HttpStatus.CREATED).body(userFound)
+        ).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
@@ -81,13 +75,12 @@ public class UserController {
 
     @PatchMapping("/disable/{id}")
     public ResponseEntity<User> disable(@PathVariable Long id) {
-    return this.service.findById(id)
-        .map(user -> {
-            user.setActive(false);
-            return ResponseEntity.ok(this.service.update(user));
-        })
-        .orElseGet(() -> ResponseEntity.notFound().build());
+        User userUpdated = this.service.disabledUser(id);
+        if(userUpdated != null) {
+            return ResponseEntity.status(HttpStatus.CREATED).body(userUpdated);
+        }else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }     
     }
-
 }
 

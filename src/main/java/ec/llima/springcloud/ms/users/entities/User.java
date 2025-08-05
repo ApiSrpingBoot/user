@@ -1,10 +1,21 @@
 package ec.llima.springcloud.ms.users.entities;
 
+import java.util.List;
+
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.ManyToMany;
+
 
 @Entity
 @Table(name = "usuarios")
@@ -24,7 +35,18 @@ public class User {
     
     private String password;
     
-    private boolean active;
+    private Boolean active;
+
+    @Transient
+    private Boolean admin;
+
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @ManyToMany
+    @JoinTable(name = "usuarios_roles", 
+        joinColumns = @JoinColumn(name = "user_id"), 
+        inverseJoinColumns = @JoinColumn(name = "role_id"),
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"user_id", "role_id"})})
+    private List<Role> roles;
 
     
     public Long getId() {
@@ -75,13 +97,28 @@ public class User {
         this.password = password;
     }
 
-    public boolean isActive() {
+    public Boolean isActive() {
         return active;
     }
 
-    public void setActive(boolean active) {
+    public void setActive(Boolean active) {
         this.active = active;
     }
 
+    public List<Role> getRoles() {
+        return roles;
+    }   
+    public void setRoles(List<Role> roles) {
+        this.roles = roles;
+    }
 
+    public Boolean getAdmin() {
+        return admin;
+    }
+
+    public void setAdmin(Boolean admin) {
+        this.admin = admin;
+    }   
+
+    
 }

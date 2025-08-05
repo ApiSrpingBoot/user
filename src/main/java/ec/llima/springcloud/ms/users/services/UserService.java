@@ -12,11 +12,11 @@ public interface UserService {
 
     User save(User user);
     
-    User update(User user);
+    Optional<User> update(User user, Long id);
 
     void deleteById(Long id);
 
     Optional<User> findByLogin(String login);
 
-
+    User disabledUser(Long id);
 }
